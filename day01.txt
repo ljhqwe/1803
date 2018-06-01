@@ -1,0 +1,173 @@
+搭建教学环境
+
+
+     1，创建两台虚拟机
+        # clone-vm7
+
+     2，改虚拟机名字,ip地址
+
+     3，远程控制
+
+     4，Yum仓库的设置
+
+服务端(真机)：
+    
+     1)安装httpd
+     2)设置随机自起
+     3)挂载访问测试
+     # mkdir /var/www/html/rhel7
+
+     # mount /iso/rhel-server-7.4-x86_64-dvd.iso  /var/www/html/rhel7
+
+     # ls /var/www/html/rhel7
+ 
+     # firefox 127.0.0.1/rhel7
+
+客户端：
+
+     # vim /etc/yum.repos.d/rhel7.repo
+     [rhel7]
+     name=rhel7
+     baseurl=http://192.168.4.254/rhel7
+     enabled=1
+     gpgcheck=0
+
+客户端(真机)：
+     开机自动挂载
+     # vim /etc/fstab 
+     /var/lib/libvirt/images/iso/rhel-server-7.4-x86_64-dvd.iso /var/www/html/rhel7 iso9660 defaults 0 0
+
+     # umount /路径
+     # mount -a
+
+
+自定义Yum仓库
+
+     1，具备光盘的软件包传递给客户端（虚拟端）
+ 
+     2，解压到/下 
+
+     3，建立仓库数据
+      # createrepo /tools/other/    #把软件包导入到yum仓库中
+      # ls /tools/other/repodata/  
+
+     4，更改配置文件，建立新的yum仓库
+      # vim /etc/yum.repos.d/rhel7.repo
+     [dierge]
+     name=rhel7
+     baseurl=file:///tools/other    # files:// 为在本地的固定格式
+     enabled=1
+     gpgcheck=0
+   
+      # yum repolist
+
+      
+     /var    存放经常变化的文件（日志文件，邮箱）
+     /proc   存放内存中的数据   不占用磁盘空间
+     /bin /sbin  存放命令的程序
+     /tmp    存放临时文件
+     /boot   启动文件
+
+权限的数值表示
+
+     基本权限：r=4 w=2 x=1
+
+     附加权限：SUID=4  SGID=2  T权限=1
+
+
+命令
+     history -c 清理历史记录
+     !(str)   执行最近一次str开头的历史命令
+ 
+     # du -sh /boot    关于目录本身的大小
+     128M    /boot
+
+     # du -h /boot     关于目录内容的大小
+
+
+
+zip归档工具，跨平台的压缩工具
+
+
+     # zip -r /root/test.zip /home/  /mnt/  （-r 文件夹）
+     # ls /root
+
+     # unzip /root/zzzhaha.zip  -d /opt  (-d 指定归档文件位置）
+    
+
+软连接与硬连接，快捷方式
+
+    制作快捷方式：
+     # ln -s /etc/redhat-release  /abc  
+              快捷方式的原路径   路径/名字
+
+    软连接  删除aa文件 bb文件不能使用 (等于删除原文件，快捷方式不能用)
+
+    硬连接  删除aa文件 cc文件仍能使用 (等于复制原文件，删除源文件，仍可以使)
+
+    # echo 111 > /opt/aa
+    # ln -s /opt/aa /opt/bb
+    # ln  /opt/aa /opt/cc
+    # ls -i /opt/cc
+    3600157 /opt/cc
+    # ls -i /opt/bb
+    43715 /opt/bb
+    # ls -i /opt/aa
+    3600157 /opt/aa
+   
+    wc -l   # 统计行数
+
+    :s/old/new      #替换光标所在行第一个old
+    :s/old/new/g    #替换当前行所有old
+    :%s/old/new/g   #替换文档所有old
+    :1,10s/old/new/g    #替换1-10行所有old
+     
+
+源码编译安装
+
+    rpm包：rpm  yum
+    
+    源码包----->可以执行的程序---->运行安装
+         gcc，make
+     
+    源码包：灵活 ，功能与安装位置 可以自己选择
+
+    1，安装gcc，make 开发工具
+      # yum -y install gcc
+      # yum -y install make
+
+    2，tar解压
+      # tar -xf /tools/inotify-tools-3.13.tar.gz  -C /mnt
+      # ls /mnt
+
+    3，./configure 配置，-- prefix指定安装目录
+      # ./configure --prefix=/opt/myrpm
+
+    4.# make     #翻译成二进制程序文件
+
+    5,# make install  #安装，将翻译号的文件复制到之前的目录
+
+    卸载=删除安装软件的路径
+
+
+syetemctl控制
+
+    systemctl start 服务名    #开启服务
+    systemctl stop 服务名     #停止服务
+    systemctl disable 服务名  #关闭开机自起
+    systemctl is-enabled 服务名  #查看是否开机自起
+
+
+模式的控制
+
+    纯文本字符模式：multi-user.target
+    图形模式：graphical.target
+
+当前模式的切换
+    # systemctl isolate graphical.target
+       设置为图形模式
+
+    # systemctl set-default graphical.target 
+       修改默认进入的模式
+    # reboot
+
